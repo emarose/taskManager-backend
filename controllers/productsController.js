@@ -2,22 +2,13 @@ const productsModel = require("../models/productsModels")
 module.exports={
     getAll: async function(req, res, next) {
         console.log(req.query)
-        try{
-            let queryFind={}
-            if(req.query.buscar){
-                //LIKE '%req.query.buscar%'
-                queryFind={name:{$regex:".*"+req.query.buscar+".*",$options:"i"}}
-                //{price:{$lt:100}}
-            }
-            const documents = await productsModel.find(queryFind)
-            .populate("category")
-            .select("name price")
-            .sort({price:-1,sku:1})
-            res.json(documents);
-        }catch(e){
-            next(e)
-        }
-        
+        try {
+            const products = await productsModel.find();
+            console.log(products);
+            res.json(products);
+          } catch (e) {
+            next(e);
+          }
       },
     getById: async function(req, res, next) {
         console.log(req.params,req.params.id)

@@ -4,38 +4,35 @@ const errorMessage = require("../util/errorMessage");
 const productSchema = mongoose.Schema({
   productName: {
     type: String,
-  /*   required: [true, errorMessage.GENERAL.campo_obligatorio], */
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
   },
   category: {
     type: String,
-    /* required: [true, errorMessage.GENERAL.campo_obligatorio], */
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
   },
-/*   categoriaProducto: {
+  /*
+    categoriaProducto: {
     type: mongoose.Schema.ObjectId,
     ref: "categorias",
   }, */
   price: {
     type: Number,
-   /*  required: [true, errorMessage.GENERAL.campo_obligatorio], */
-    /* get: function (value) {
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
+    min:1,
+    get: function (value) {
       return value * 1.21;
-    }, */
+    },
   },
   cost: {
     type: Number,
-    /* required: [true, errorMessage.GENERAL.campo_obligatorio], */
-    /*  min:1,
-        max:10 */
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
+    min:1
   },
   details: {
     type: String,
     required: false,
   },
 
-  deleted: {
-    type: Boolean,
-    default: false,
-  },
 });
 productSchema.virtual("price_currency").get(function () {
   return "$ " + this.price;
