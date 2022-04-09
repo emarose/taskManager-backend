@@ -29,11 +29,22 @@ module.exports = {
   },
   delete: async function (req, res, next) {
     try {
-    const deleted = await categoriesModel.deleteOne({_id:req.params.id})
-    res.json(deleted)
+      const deleted = await categoriesModel.deleteOne({ _id: req.params.id });
+      res.json(deleted);
     } catch (e) {
       next(e);
     }
   },
- 
+  update: async function (req, res, next) {
+    try {
+      console.log(req.body);
+      const update = await categoriesModel.updateOne(
+        { _id: req.params.id },
+        req.body
+      );
+      res.json(update);
+    } catch (e) {
+      console.log(e);
+    }
+  },
 };
