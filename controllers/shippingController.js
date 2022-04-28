@@ -1,21 +1,20 @@
-const { db } = require("../models/customersModel");
-const customersModel = require("../models/customersModel");
+const shippingModel = require("../models/shippingModels");
 
 module.exports = {
   getAll: async function (req, res, next) {
     try {
-      const customers = await customersModel.find();
-      console.log(customers);
-      res.json(customers);
+      const shipping = await shippingModel.find();
+      console.log(shipping);
+      res.json(shipping);
     } catch (e) {
       next(e);
     }
   },
   create: async function (req, res, next) {
     try {
-      const document = new customersModel({
+      const document = new shippingModel({
         code: req.body.code,
-        name: req.body.name,
+        enterprise: req.body.enterprise,
         address: req.body.address,
         contact: req.body.contact,
         notes: req.body.notes,
@@ -31,7 +30,7 @@ module.exports = {
   },
   delete: async function (req, res, next) {
     try {
-      const deleted = await customersModel.deleteOne({ _id: req.params.id });
+      const deleted = await shippingModel.deleteOne({ _id: req.params.id });
       res.json(deleted);
     } catch (e) {
       next(e);
@@ -41,7 +40,7 @@ module.exports = {
     console.log(req.body[0].searchField);
 
     try {
-      const doc = await customersModel.findOne({ _id: req.params.id });
+      const doc = await shippingModel.findOne({ _id: req.params.id });
       const update = { [req.body[0].searchField]: req.body[0].update };
       await doc.updateOne(update);
 
@@ -52,7 +51,7 @@ module.exports = {
   },
   amount: async function (req, res, next) {
     try {
-      const amount = await customersModel.find({}).sort({ code: -1 }).limit(1);
+      const amount = await shippingModel.find({}).sort({ code: -1 }).limit(1);
 
       res.json(amount[0].code);
     } catch (e) {

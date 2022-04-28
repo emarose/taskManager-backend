@@ -1,19 +1,18 @@
-const { db } = require("../models/categoriesModel");
-const categoriesModel = require("../models/categoriesModel");
+const saleModesModel = require("../models/saleModesModel");
 
 module.exports = {
   getAll: async function (req, res, next) {
     try {
-      const categories = await categoriesModel.find();
-      console.log(categories);
-      res.json(categories);
+      const saleModes = await saleModesModel.find();
+      console.log(saleModes);
+      res.json(saleModes);
     } catch (e) {
       next(e);
     }
   },
   create: async function (req, res, next) {
     try {
-      const document = new categoriesModel({
+      const document = new saleModesModel({
         code: req.body.code,
         name: req.body.name,
       });
@@ -28,7 +27,7 @@ module.exports = {
   },
   delete: async function (req, res, next) {
     try {
-      const deleted = await categoriesModel.deleteOne({ _id: req.params.id });
+      const deleted = await saleModesModel.deleteOne({ _id: req.params.id });
       res.json(deleted);
     } catch (e) {
       next(e);
@@ -37,7 +36,7 @@ module.exports = {
   update: async function (req, res, next) {
     try {
       console.log(req.body);
-      const update = await categoriesModel.updateOne(
+      const update = await saleModesModel.updateOne(
         { _id: req.params.id },
         req.body
       );
@@ -49,7 +48,7 @@ module.exports = {
   },
   amount: async function (req, res, next) {
     try {
-      const amount = await categoriesModel.find({}).sort({ _id: -1 }).limit(1);
+      const amount = await saleModesModel.find({}).sort({ _id: -1 }).limit(1);
 
       res.json(amount[0].code);
     } catch (e) {

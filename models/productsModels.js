@@ -1,7 +1,12 @@
-const mongoose = require("../bin/mongodb");
+var mongoose = require("mongoose");
 const errorMessage = require("../util/errorMessage");
 
 const productSchema = mongoose.Schema({
+  code: {
+    type: Number,
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
+    min: 0,
+  },
   productName: {
     type: String,
     required: [true, errorMessage.GENERAL.campo_obligatorio],
@@ -25,8 +30,8 @@ const productSchema = mongoose.Schema({
   },
   cost: {
     type: Number,
-    required: [true, errorMessage.GENERAL.campo_obligatorio],
-    min: 1,
+    //required: [true, errorMessage.GENERAL.campo_obligatorio],
+    min: 0,
   },
   details: {
     type: String,
@@ -49,6 +54,24 @@ productSchema.virtual("cost_currency").get(function () {
     "$1."
   )}`;
 });
+
+/* productSchema.pre("save", function (next) {
+  var docId = this._id;
+
+  const countercollection = countersModels._id;
+
+  var counter = countersModels.findOneAndUpdate(
+    { _id: this._id },
+    { $inc: { product_counter: 1 } },
+    { returnNewDocument: true, upsert: true }
+  );
+
+  var updateRes = productSchema.updateOne(
+    { _id: docId },
+    { $set: { productId: counter.product_counter } }
+  );
+  console.log(updateRes);
+}); */
 
 productSchema.set("toJSON", { getters: true, virtuals: true });
 

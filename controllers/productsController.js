@@ -23,10 +23,11 @@ module.exports = {
     //console.log("req name:", req.body);
     try {
       const data = new productsModel({
+        code: req.body.code,
         productName: req.body.productName,
         category: req.body.category,
         price: req.body.price,
-        cost: req.body.cost,
+        cost: req.body.cost || 0,
         details: req.body.details,
       });
       const document = await data.save();
@@ -57,6 +58,16 @@ module.exports = {
       const deleted = await productsModel.deleteOne({ _id: req.params.id });
       res.json(deleted);
     } catch (e) {
+      next(e);
+    }
+  },
+  amount: async function (req, res, next) {
+    try {
+      const amount = await productsModel.find({}).sort({ code: -1 }).limit(1);
+      console.log(amount);
+      res.json(amount[0].code);
+    } catch (e) {
+      console.log(e);
       next(e);
     }
   },

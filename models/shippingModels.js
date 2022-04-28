@@ -1,18 +1,19 @@
-const mongoose = require("../bin/mongodb");
+var mongoose = require("mongoose");
 const errorMessage = require("../util/errorMessage");
 
-const customerschema = mongoose.Schema({
+const shippingSchema = mongoose.Schema({
   code: {
     type: Number,
     required: [true, errorMessage.GENERAL.campo_obligatorio],
     min: 0,
   },
-  name: {
+  enterprise: {
     type: String,
     required: [true, errorMessage.GENERAL.campo_obligatorio],
   },
   address: {
     type: String,
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
   },
   contact: {
     type: String,
@@ -23,7 +24,7 @@ const customerschema = mongoose.Schema({
   },
 });
 
-customerschema.set("toJSON", { getters: true, virtuals: true });
+shippingSchema.set("toJSON", { getters: true, virtuals: true });
 
 //Creacion modelo (Clase -> POO)
-module.exports = mongoose.model("customers", customerschema);
+module.exports = mongoose.model("shipping", shippingSchema);

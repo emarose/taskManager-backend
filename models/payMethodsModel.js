@@ -1,7 +1,7 @@
 const mongoose = require("../bin/mongodb");
 const errorMessage = require("../util/errorMessage");
 
-const categorySchema = new mongoose.Schema({
+const payMethodsSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, errorMessage.GENERAL.campo_obligatorio],
@@ -13,4 +13,4 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("categories", categorySchema);
+module.exports = mongoose.model("payMethods", payMethodsSchema);
