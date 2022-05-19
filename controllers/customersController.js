@@ -5,7 +5,7 @@ module.exports = {
   getAll: async function (req, res, next) {
     try {
       const customers = await customersModel.find();
-      console.log(customers);
+      //console.log(customers);
       res.json(customers);
     } catch (e) {
       next(e);

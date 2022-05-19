@@ -4,7 +4,7 @@ module.exports = {
   getAll: async function (req, res, next) {
     try {
       const saleModes = await saleModesModel.find();
-      console.log(saleModes);
+      //console.log(saleModes);
       res.json(saleModes);
     } catch (e) {
       next(e);

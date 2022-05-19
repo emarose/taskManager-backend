@@ -12,8 +12,8 @@ var productsRouter = require("./routes/products");
 var categoriesRouter = require("./routes/categories");
 var saleModesRouter = require("./routes/saleModes");
 var payMethodsRouter = require("./routes/payMethods");
-var countersRouter = require("./routes/counters");
 var purchaseOrdersRouter = require("./routes/purchaseOrders");
+var reportsRouter = require("./routes/reports");
 
 var app = express();
 var cors = require("cors");
@@ -37,15 +37,16 @@ app.use("/customers", customersRouter);
 app.use("/shipping", shippingRouter);
 app.use("/products", productsRouter);
 app.use("/categories", categoriesRouter);
-app.use("/counters", countersRouter);
 app.use("/purchaseOrders", purchaseOrdersRouter);
 app.use("/saleModes", saleModesRouter);
 app.use("/payMethods", payMethodsRouter);
+
+app.use("/reports", reportsRouter);
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development

@@ -6,6 +6,7 @@ const purchaseOrdersSchema = mongoose.Schema({
     type: Number,
     required: [true, errorMessage.GENERAL.campo_obligatorio],
     min: 0,
+    default: 0,
   },
   customer: {
     type: String,
@@ -55,6 +56,10 @@ const purchaseOrdersSchema = mongoose.Schema({
   },
   orderState: {
     type: String,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
   },
 });
 

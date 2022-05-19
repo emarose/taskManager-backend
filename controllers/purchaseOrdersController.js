@@ -13,7 +13,7 @@ module.exports = {
   create: async function (req, res, next) {
     try {
       const document = new purchaseOrdersModel({
-        code: req.body.code || 1,
+        code: req.body.code,
         customer: req.body.customer,
         orderProducts: req.body.orderProducts,
 
@@ -29,6 +29,7 @@ module.exports = {
         payMethod: req.body.payMethod,
         paymentState: req.body.paymentState,
         orderNotes: req.body.orderNotes || "Sin observaciones",
+        isDeleted: false,
       });
 
       const response = await document.save();
@@ -44,6 +45,14 @@ module.exports = {
       const deleted = await purchaseOrdersModel.deleteOne({
         _id: req.params.id,
       });
+      await purchaseOrdersModel.findOneAndUpdate(
+        {
+          _id: req.params.id,
+        },
+        { isDeleted: true }
+      );
+      //  isDeleted: true
+
       res.json(deleted);
     } catch (e) {
       next(e);
@@ -64,11 +73,17 @@ module.exports = {
   },
   amount: async function (req, res, next) {
     try {
-      const amount = await purchaseOrdersModel
-        .find({})
-        .sort({ code: -1 })
-        .limit(1);
-      res.json(amount[0].code);
+      const countDoc = await purchaseOrdersModel.countDocuments();
+      if (countDoc === 0) {
+        res.json(0);
+      } else {
+        const amount = await purchaseOrdersModel
+          .find({})
+          .sort({ _id: -1 })
+          .limit(1);
+
+        res.json(amount[0].code);
+      }
     } catch (e) {
       console.log(e);
       next(e);
