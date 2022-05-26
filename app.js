@@ -14,7 +14,9 @@ var saleModesRouter = require("./routes/saleModes");
 var payMethodsRouter = require("./routes/payMethods");
 var purchaseOrdersRouter = require("./routes/purchaseOrders");
 var reportsRouter = require("./routes/reports");
-
+var suppliersRouter = require("./routes/suppliers");
+var inputsRouter = require("./routes/inputs");
+var eventsRouter = require("./routes/events");
 var app = express();
 var cors = require("cors");
 
@@ -31,22 +33,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-//app.use('/', indexRouter);
-//app.use("/users", usersRouter)
 app.use("/customers", customersRouter);
 app.use("/shipping", shippingRouter);
+app.use("/suppliers", suppliersRouter);
 app.use("/products", productsRouter);
 app.use("/categories", categoriesRouter);
 app.use("/purchaseOrders", purchaseOrdersRouter);
 app.use("/saleModes", saleModesRouter);
 app.use("/payMethods", payMethodsRouter);
-
+app.use("/inputs", inputsRouter);
 app.use("/reports", reportsRouter);
+app.use("/events", eventsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development

@@ -57,6 +57,9 @@ const purchaseOrdersSchema = mongoose.Schema({
   orderState: {
     type: String,
   },
+  event: {
+    type: String,
+  },
   isDeleted: {
     type: Boolean,
     default: false,

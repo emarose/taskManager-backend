@@ -28,7 +28,8 @@ module.exports = {
         saleMode: req.body.saleMode,
         payMethod: req.body.payMethod,
         paymentState: req.body.paymentState,
-        orderNotes: req.body.orderNotes || "Sin observaciones",
+        orderNotes: req.body.orderNotes,
+        event: req.body.event,
         isDeleted: false,
       });
 
