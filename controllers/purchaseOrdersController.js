@@ -10,6 +10,16 @@ module.exports = {
       next(e);
     }
   },
+  getById: async function (req, res, next) {
+    try {
+      const documents = await purchaseOrdersModel.find({
+        code: req.params.id,
+      });
+      res.json(documents);
+    } catch (e) {
+      next(e);
+    }
+  },
   create: async function (req, res, next) {
     try {
       const document = new purchaseOrdersModel({

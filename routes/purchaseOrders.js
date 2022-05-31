@@ -12,5 +12,7 @@ router.post("/add", purchaseOrdersController.create);
 router.delete("/:id", purchaseOrdersController.delete);
 /* Actualizar */
 router.put("/:id", purchaseOrdersController.update);
+/* Cargar por ID */
+router.get("/:id", purchaseOrdersController.getById);
 
 module.exports = router;

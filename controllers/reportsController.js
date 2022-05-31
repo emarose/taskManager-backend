@@ -132,11 +132,12 @@ module.exports = {
   },
   getOrderByCode: async function (req, res, next) {
     try {
-      const { code } = req.params.code;
       const foundOrder = await purchaseOrdersModel.find({
         code: req.params.code,
       });
+
       console.log(foundOrder);
+
       let arr = [];
       let productsArray = [];
       let sum = 0;
@@ -163,7 +164,10 @@ module.exports = {
           code: foundOrder[i].code,
           customer: foundOrder[i].customer,
           purchaseDate: foundOrder[i].purchaseDate.toLocaleDateString(),
-          paymentDate: foundOrder[i].paymentDate.toLocaleDateString(),
+          paymentDate:
+            foundOrder[i].paymentDate !== null
+              ? foundOrder[i].paymentDate.toLocaleDateString()
+              : "Pendiente",
           paymentState: foundOrder[i].paymentState,
           payMethod: foundOrder[i].payMethod,
           saleMode: foundOrder[i].saleMode,
