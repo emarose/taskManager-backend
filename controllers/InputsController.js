@@ -30,6 +30,7 @@ module.exports = {
     }
   },
   delete: async function (req, res, next) {
+    console.log("ACA");
     try {
       const deleted = await inputsModel.deleteOne({ _id: req.params.id });
       res.json(deleted);
@@ -54,7 +55,7 @@ module.exports = {
     try {
       const amount = await inputsModel.find({}).sort({ code: -1 }).limit(1);
 
-      res.json(amount[0].code);
+      amount[0] ? res.json(amount[0].code) : res.json(0);
     } catch (e) {
       console.log(e);
       next(e);

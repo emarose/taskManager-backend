@@ -4,7 +4,7 @@ module.exports = {
   getAll: async function (req, res, next) {
     try {
       const purchaseOrders = await purchaseOrdersModel.find();
-      console.log(purchaseOrders);
+      /* console.log(purchaseOrders); */
       res.json(purchaseOrders);
     } catch (e) {
       next(e);
@@ -13,7 +13,17 @@ module.exports = {
   getById: async function (req, res, next) {
     try {
       const documents = await purchaseOrdersModel.find({
-        code: req.params.id,
+        _id: req.params.id,
+      });
+      res.json(documents);
+    } catch (e) {
+      next(e);
+    }
+  },
+  getByCode: async function (req, res, next) {
+    try {
+      const documents = await purchaseOrdersModel.find({
+        code: req.params.code,
       });
       res.json(documents);
     } catch (e) {
@@ -39,7 +49,10 @@ module.exports = {
         payMethod: req.body.payMethod,
         paymentState: req.body.paymentState,
         orderNotes: req.body.orderNotes,
-        event: req.body.event,
+        event:
+          req.body.event !== "Sin asociar"
+            ? req.body.event.substring(4)
+            : req.body.event,
         isDeleted: false,
       });
 
@@ -70,8 +83,6 @@ module.exports = {
     }
   },
   update: async function (req, res, next) {
-    console.log(req.body[0].searchField);
-
     try {
       const doc = await purchaseOrdersModel.findOne({ _id: req.params.id });
       const update = { [req.body[0].searchField]: req.body[0].update };
@@ -82,6 +93,32 @@ module.exports = {
       console.log(e);
     }
   },
+  updateEvent: async function (req, res, next) {
+    try {
+      console.log("REQU PARAMS:", req.params, req.body);
+
+      const doc = await purchaseOrdersModel.findOne({ _id: req.params.id });
+      const update = req.body;
+      await doc.updateOne(req.body);
+      res.json(update);
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  },
+  /* unlinkEvent: async function (req, res, next) {
+    try {
+      console.log("REQU PARAMS:", req.params, req.body);
+
+      const doc = await purchaseOrdersModel.findOne({ code: req.params.code });
+      const update = "Sin asociar";
+      await doc.updateOne({ event: "Sin asociar" });
+      res.json(update);
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  }, */
   amount: async function (req, res, next) {
     try {
       const countDoc = await purchaseOrdersModel.countDocuments();

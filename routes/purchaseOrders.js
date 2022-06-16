@@ -6,13 +6,17 @@ const purchaseOrdersController = require("../controllers/purchaseOrdersControlle
 router.get("/countPurchaseOrders", purchaseOrdersController.amount);
 /* Cargar todos */
 router.get("/", purchaseOrdersController.getAll);
+/* Cargar por ID */
+router.get("/:id", purchaseOrdersController.getById);
+/* Cargar por Codigo */
+router.get("/byCode/:code", purchaseOrdersController.getByCode);
 /* Agregar */
 router.post("/add", purchaseOrdersController.create);
 /* Eliminar */
 router.delete("/:id", purchaseOrdersController.delete);
 /* Actualizar */
 router.put("/:id", purchaseOrdersController.update);
-/* Cargar por ID */
-router.get("/:id", purchaseOrdersController.getById);
+/* Actualizar evento asociado */
+router.put("/updateEvent/:id", purchaseOrdersController.updateEvent);
 
 module.exports = router;

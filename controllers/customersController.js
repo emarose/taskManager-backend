@@ -1,4 +1,3 @@
-const { db } = require("../models/customersModel");
 const customersModel = require("../models/customersModel");
 
 module.exports = {
@@ -54,7 +53,7 @@ module.exports = {
     try {
       const amount = await customersModel.find({}).sort({ code: -1 }).limit(1);
 
-      res.json(amount[0].code);
+      amount[0] ? res.json(amount[0].code) : res.json(0);
     } catch (e) {
       console.log(e);
       next(e);

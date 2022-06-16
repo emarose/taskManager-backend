@@ -1,10 +1,30 @@
 const eventsModel = require("../models/eventsModels");
+const purchaseOrdersModel = require("../models/purchaseOrdersModels");
 
 module.exports = {
   getAll: async function (req, res, next) {
     try {
       const events = await eventsModel.find();
       //console.log(events);
+      res.json(events);
+    } catch (e) {
+      next(e);
+    }
+  },
+  /* getByCode: async function (req, res, next) {
+    try {
+      console.log(req.params);
+      const events = await eventsModel.find({ code: parseInt(req.params) });
+      console.log(events);
+      res.json(events);
+    } catch (e) {
+      next(e);
+    }
+  }, */
+  getById: async function (req, res, next) {
+    try {
+      const events = await eventsModel.find({ _id: req.params.id });
+
       res.json(events);
     } catch (e) {
       next(e);
@@ -39,12 +59,37 @@ module.exports = {
   },
   update: async function (req, res, next) {
     try {
-      console.log(req.body);
+      console.log("REQ (Id):", req.params);
+
       const update = await eventsModel.updateOne(
-        { _id: req.params.id },
-        req.body
+        { code: req.params.id },
+        { $push: req.body }
       );
       res.json(update);
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  },
+  unlink: async function (req, res, next) {
+    try {
+      console.log(req.body);
+      const { eventId, orderCode } = req.body;
+
+      const update = await eventsModel.updateOne(
+        { _id: eventId },
+        { $pull: { orders: orderCode } },
+        { multi: true }
+      );
+
+      const updatePurchaseOrders = await purchaseOrdersModel.updateOne(
+        { code: orderCode },
+        { event: "Sin asociar" }
+      );
+
+      console.log(update, updatePurchaseOrders);
+
+      res.json(updatePurchaseOrders);
     } catch (e) {
       console.log(e);
       next(e);
@@ -53,7 +98,7 @@ module.exports = {
   amount: async function (req, res, next) {
     try {
       const amount = await eventsModel.find({}).sort({ code: -1 }).limit(1);
-      res.json(amount[0].code);
+      amount[0] ? res.json(amount[0].code) : res.json(0);
     } catch (e) {
       console.log(e);
       next(e);

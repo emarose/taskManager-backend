@@ -64,8 +64,8 @@ module.exports = {
   amount: async function (req, res, next) {
     try {
       const amount = await productsModel.find({}).sort({ code: -1 }).limit(1);
-      console.log(amount);
-      res.json(amount[0].code);
+
+      amount[0] ? res.json(amount[0].code) : res.json(0);
     } catch (e) {
       console.log(e);
       next(e);

@@ -1,5 +1,6 @@
 const purchaseOrdersModel = require("../models/purchaseOrdersModels");
 const inputsModel = require("../models/inputsModels");
+const eventsModel = require("../models/eventsModels");
 
 const PDFDocumentTable = require("pdfkit-table");
 const fs = require("fs");
@@ -370,7 +371,6 @@ module.exports = {
           $lte: new Date(endDate),
         },
       });
-      console.log(findInputsBetweenDates, "Fin de salidas encontradas");
 
       const iDate = new Date(initDate).toLocaleDateString();
       const eDate = new Date(endDate).toLocaleDateString();
@@ -394,7 +394,6 @@ module.exports = {
       const doc = new PDFDocumentTable({
         margin: 30,
         size: "A4",
-        layout: "landscape",
       });
 
       doc.pipe(fs.createWriteStream("Exported/ListadoSalidas.pdf"));
@@ -540,6 +539,218 @@ module.exports = {
           {
             label: "Forma de pago",
             property: "payMethod",
+            valign: "center",
+            align: "center",
+            width: 90,
+          },
+
+          {
+            label: "Importe",
+            property: "amount",
+            valign: "center",
+            align: "center",
+            width: 90,
+          },
+        ],
+        datas: arr,
+      };
+
+      /* TABLA GENERAL */
+      doc.table(table, {
+        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
+        y: doc.y + 40,
+        prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
+          doc.font("Helvetica").fontSize(8);
+          indexColumn === 0 && doc.addBackground(rectRow, "purple", 0.1);
+        },
+      });
+
+      doc.end();
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  },
+  getEventsBetweenDates: async function (req, res, next) {
+    try {
+      const { initDate, endDate } = req.body.dates;
+
+      const findEventsBetweenDates = await eventsModel.find({
+        date: {
+          $gte: new Date(initDate),
+          $lte: new Date(endDate),
+        },
+      });
+
+      console.log(findEventsBetweenDates);
+
+      const iDate = new Date(initDate).toLocaleDateString();
+      const eDate = new Date(endDate).toLocaleDateString();
+      let arr = [];
+      for (let i = 0; i < findEventsBetweenDates.length; i++) {
+        data = {
+          code: findEventsBetweenDates[i].code,
+          date: findEventsBetweenDates[i].date.toLocaleDateString(),
+          name: findEventsBetweenDates[i].name,
+          address: findEventsBetweenDates[i].address,
+          orders: findEventsBetweenDates[i].orders
+            .toString()
+            .split(",")
+            .join(" - "),
+          notes: findEventsBetweenDates[i].notes,
+        };
+        arr.push(data);
+      }
+      console.log(arr);
+
+      const doc = new PDFDocumentTable({
+        margin: 30,
+        size: "A4",
+      });
+
+      doc.pipe(fs.createWriteStream("Exported/ListadoEventos.pdf"));
+
+      res.setHeader("Content-type", "application/pdf");
+      doc.pipe(res);
+
+      const table = {
+        title: "Resumen de Eventos",
+        subtitle: `Fechas: ${iDate} a ${eDate}`,
+        headers: [
+          {
+            label: "#",
+            property: "code",
+            valign: "center",
+            align: "center",
+            width: 30,
+          },
+          {
+            label: "Evento",
+            property: "name",
+            valign: "center",
+            align: "center",
+            width: 100,
+          },
+          {
+            label: "Fecha",
+            property: "date",
+            valign: "center",
+            align: "center",
+            width: 75,
+          },
+          {
+            label: "Ordenes",
+            property: "orders",
+            valign: "center",
+            align: "center",
+            width: 75,
+          },
+          {
+            label: "Dirección",
+            property: "address",
+            valign: "center",
+            align: "center",
+            width: 75,
+          },
+          {
+            label: "Observaciones",
+            property: "notes",
+            valign: "center",
+            align: "center",
+            width: 100,
+          },
+        ],
+        datas: arr,
+      };
+      const options = {};
+      const callback = () => {};
+      doc.table(table, options, callback);
+
+      doc.end();
+    } catch (e) {
+      next(e);
+    }
+  },
+  getEventByCode: async function (req, res, next) {
+    try {
+      const foundOrder = await eventsModel.find({
+        code: req.params.code,
+      });
+
+      console.log(foundOrder);
+      let arr = [];
+
+      for (let i = 0; i < foundOrder.length; i++) {
+        data = {
+          code: foundOrder[i].code,
+          date: foundOrder[i].date.toLocaleDateString(),
+          name: foundOrder[i].name,
+          address: foundOrder[i].address,
+          orders: foundOrder[i].orders.toString().split(",").join(" - "),
+          notes: foundOrder[i].notes,
+        };
+
+        arr.push(data);
+      }
+
+      const doc = new PDFDocumentTable({
+        margin: 60,
+        size: "A4",
+      });
+
+      doc
+        .image("Exported/logo.png", 50, 27, {
+          fit: [50, 50],
+          align: "center",
+          valign: "center",
+        })
+        .rect(50, 25, 50, 50)
+        .stroke()
+        .fontSize(10)
+        .font("Times-Roman")
+        .text("Sistema de gestión", 35, 83);
+
+      doc.pipe(fs.createWriteStream("Exported/ListadoOrdenes.pdf"));
+
+      res.setHeader("Content-type", "application/pdf");
+      doc.pipe(res);
+
+      const table = {
+        title: "Evento #" + foundOrder[0].code,
+        subtitle: "Fecha de emisión: " + new Date().toLocaleDateString(),
+
+        headers: [
+          {
+            label: "Código",
+            property: "code",
+            valign: "center",
+            align: "center",
+            width: 50,
+          },
+          {
+            label: "Designación",
+            property: "name",
+            valign: "center",
+            width: 60,
+          },
+          {
+            label: "Fecha",
+            property: "date",
+            valign: "center",
+            align: "center",
+            width: 75,
+          },
+          {
+            label: "Observaciones",
+            property: "notes",
+            valign: "center",
+            align: "center",
+            width: 75,
+          },
+
+          {
+            label: "Ordenes asociadas",
+            property: "orders",
             valign: "center",
             align: "center",
             width: 90,

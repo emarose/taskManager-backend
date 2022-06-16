@@ -52,7 +52,7 @@ module.exports = {
     try {
       const amount = await suppliersModel.find({}).sort({ code: -1 }).limit(1);
 
-      res.json(amount[0].code);
+      amount[0] ? res.json(amount[0].code) : res.json(0);
     } catch (e) {
       console.log(e);
       next(e);

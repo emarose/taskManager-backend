@@ -48,9 +48,9 @@ module.exports = {
   },
   amount: async function (req, res, next) {
     try {
-      const amount = await payMethodsModel.find({}).sort({ _id: -1 }).limit(1);
+      const amount = await payMethodsModel.find({}).sort({ code: -1 }).limit(1);
 
-      res.json(amount[0].code);
+      amount[0] ? res.json(amount[0].code) : res.json(0);
     } catch (e) {
       console.log(e);
       next(e);
