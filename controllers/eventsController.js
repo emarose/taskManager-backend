@@ -58,18 +58,29 @@ module.exports = {
     }
   },
   update: async function (req, res, next) {
+    console.log(req.body[0].searchField);
+
     try {
+      const doc = await eventsModel.findOne({ _id: req.params.id });
+      const update = { [req.body[0].searchField]: req.body[0].update };
+      await doc.updateOne(update);
+
+      res.json(doc);
+    } catch (e) {
+      console.log(e);
+    }
+    /* try {
       console.log("REQ (Id):", req.params);
 
       const update = await eventsModel.updateOne(
-        { code: req.params.id },
+        { _id: req.params.id },
         { $push: req.body }
       );
       res.json(update);
     } catch (e) {
       console.log(e);
       next(e);
-    }
+    } */
   },
   unlink: async function (req, res, next) {
     try {

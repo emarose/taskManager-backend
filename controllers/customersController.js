@@ -17,7 +17,7 @@ module.exports = {
         name: req.body.name,
         address: req.body.address,
         contact: req.body.contact,
-        notes: req.body.notes,
+        notes: req.body.notes === " " ? "Sin observaciones" : req.body.notes,
       });
 
       const response = await document.save();
@@ -37,13 +37,10 @@ module.exports = {
     }
   },
   update: async function (req, res, next) {
-    console.log(req.body[0].searchField);
-
     try {
       const doc = await customersModel.findOne({ _id: req.params.id });
       const update = { [req.body[0].searchField]: req.body[0].update };
       await doc.updateOne(update);
-
       res.json(doc);
     } catch (e) {
       console.log(e);

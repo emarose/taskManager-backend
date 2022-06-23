@@ -17,7 +17,7 @@ module.exports = {
         enterprise: req.body.enterprise,
         address: req.body.address,
         contact: req.body.contact,
-        notes: req.body.notes,
+        notes: req.body.notes === " " ? "Sin observaciones" : req.body.notes,
       });
 
       const response = await document.save();

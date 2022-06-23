@@ -1,10 +1,9 @@
 const productsModel = require("../models/productsModels");
 module.exports = {
   getAll: async function (req, res, next) {
-    //console.log(req.query);
     try {
       const products = await productsModel.find();
-      //console.log(products);
+
       res.json(products);
     } catch (e) {
       next(e);
@@ -28,7 +27,7 @@ module.exports = {
         category: req.body.category,
         price: req.body.price,
         cost: req.body.cost || 0,
-        details: req.body.details,
+        details: req.body.details === " " ? "Sin detalles" : req.body.details,
       });
       const document = await data.save();
 
