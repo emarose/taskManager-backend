@@ -1,12 +1,16 @@
 const purchaseOrdersModel = require("../models/purchaseOrdersModels");
 const inputsModel = require("../models/inputsModels");
 const eventsModel = require("../models/eventsModels");
+const customersModel = require("../models/customersModel");
 
 const PDFDocumentTable = require("pdfkit-table");
+const PDFDocument = require("pdfkit");
+
 const fs = require("fs");
 const formatNumberToCurrency = require("../util/utils.js");
 
 module.exports = {
+  /* Ordenes */
   getOrdersBetweenDates: async function (req, res, next) {
     try {
       const { initDate, endDate } = req.body.dates;
@@ -137,9 +141,13 @@ module.exports = {
         code: req.params.code,
       });
 
-      console.log(foundOrder);
+      console.log(foundOrder[0].customer);
 
-      let arr = [];
+      const customerByName = await customersModel.find({
+        name: foundOrder[0].customer,
+      });
+      console.log("CLIENTE POR NOMBRE:", customerByName);
+
       let productsArray = [];
       let sum = 0;
 
@@ -156,9 +164,22 @@ module.exports = {
       }
 
       productsArray.push({
-        options: { fontFamily: "Helvetica-Bold" },
         productPrice: `bold: Total: ${formatNumberToCurrency(sum)}`,
       });
+
+      const lastIndex = productsArray.length - 1;
+
+      const doc = new PDFDocumentTable({
+        margins: {
+          top: 50,
+          bottom: 50,
+          left: 70,
+          right: 70,
+        },
+        font: "Helvetica",
+        size: "A4",
+      });
+      let arr = [];
 
       for (let i = 0; i < foundOrder.length; i++) {
         data = {
@@ -177,38 +198,29 @@ module.exports = {
           shippingAddress: foundOrder[i].shippingAddress,
           shippingEnterprise: foundOrder[i].shippingEnterprise,
         };
-
         arr.push(data);
       }
 
-      const doc = new PDFDocumentTable({
-        margin: 60,
-        size: "A4",
+      /* LOGO */
+      doc.image("Exported/logo.jpg", 40, 40, {
+        fit: [50, 50],
+        align: "center",
+        valign: "center",
       });
 
+      /* TITULO */
       doc
-        .image("Exported/logo.png", 50, 27, {
-          fit: [50, 50],
+        .moveDown(5)
+        .fontSize(23)
+        .font("Helvetica-Bold")
+        .text("INFORMACIÓN DE ORDEN # " + foundOrder[0].code, {
           align: "center",
-          valign: "center",
         })
-        .rect(50, 25, 50, 50)
-        .stroke()
-        .fontSize(10)
-        .font("Times-Roman")
-        .text("Sistema de gestión", 35, 83);
+        .moveDown();
 
-      doc.pipe(fs.createWriteStream("Exported/ListadoOrdenes.pdf"));
-
-      res.setHeader("Content-type", "application/pdf");
-      doc.pipe(res);
-
-      const table = {
-        title: "Orden de compra #" + foundOrder[0].code,
-        subtitle:
-          "Fecha de emisión: " +
-          new Date().toLocaleDateString() /* "Cliente: " + foundOrder[0].customer.substring(4) */,
-
+      const generalTable = {
+        title: "Fecha de emisión: " + new Date().toLocaleDateString(),
+        subtitle: " ",
         headers: [
           {
             label: "Código",
@@ -256,104 +268,171 @@ module.exports = {
         datas: arr,
       };
 
+      doc.table(generalTable, {
+        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+        x: doc.x,
+        y: doc.y,
+        width: 455,
+
+        prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
+          doc.font("Helvetica").fontSize(10),
+            indexRow % 2 !== 0 &&
+              indexRow !== lastIndex &&
+              doc.addBackground(rectRow, "#753bbd", 0.02),
+            indexRow === lastIndex &&
+              doc.addBackground(rectCell, "#753bbd", 0.2);
+        },
+        columnSpacing: 8,
+        divider: {
+          horizontal: { disabled: false, width: 0.5, opacity: 0.5 },
+          header: { disabled: false, width: 2, opacity: 0.8 },
+        },
+      });
+
+      /* CLIENTE */
+      doc.moveDown().fontSize(15).font("Helvetica").text("Datos del cliente:");
+      doc
+        .moveDown()
+        .fontSize(10)
+        .text("Código # ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${customerByName[0].code}`);
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Nombre: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${customerByName[0].name}`);
+
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Dirección: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${customerByName[0].address}`);
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Contacto: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${customerByName[0].contact}`);
+
+      /* ENTREGA */
+
+      doc
+        .moveUp(10)
+        .fontSize(15)
+        .font("Helvetica")
+        .text("Datos de entrega: ", 250, doc.y);
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Estado: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${foundOrder[0].shippingState}`);
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Empresa: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${foundOrder[0].shippingEnterprise}`);
+
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Dirección de entrega: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${foundOrder[0].shippingAddress}`);
+      doc
+        .moveDown()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Modalidad: ", { continued: true })
+        .font("Helvetica-Bold")
+        .text(`${foundOrder[0].shippingMode}`);
+
+      /* PRODUCTOS */
+      doc
+        .fontSize(15)
+        .font("Helvetica")
+        .text("Productos incluídos:", doc.x, doc.y + 30);
+
       const productsTable = {
-        title: "Productos adquiridos",
         headers: [
           {
             label: "Producto",
             property: "productName",
             valign: "center",
             align: "center",
-            width: 100,
           },
           {
             label: "Descripción",
             property: "productDetails",
             valign: "center",
             align: "center",
-            width: 100,
           },
           {
             label: "Cantidad",
             property: "productQuantity",
             valign: "center",
             align: "center",
-            width: 40,
           },
           {
             label: "Precio U.",
             property: "productPrice",
             valign: "center",
             align: "right",
-            width: 70,
           },
         ],
         datas: productsArray,
       };
 
-      const shippingTable = {
-        title: "Datos de entrega",
-        headers: [
-          {
-            label: "Modalidad",
-            property: "shippingMode",
-            valign: "center",
-            align: "center",
-            width: 100,
-          },
-          {
-            label: "Direccion",
-            property: "shippingAddress",
-            valign: "center",
-            align: "center",
-            width: 100,
-          },
-          {
-            label: "Empresa",
-            property: "shippingEnterprise",
-            valign: "center",
-            align: "center",
-            width: 100,
-          },
-          {
-            label: "Estado",
-            property: "shippingState",
-            valign: "center",
-            align: "center",
-            width: 70,
-          },
-        ],
-        datas: arr,
-      };
-
-      /* TABLA GENERAL */
-      doc.table(table, {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
-        y: doc.y + 40,
-        prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          doc.font("Helvetica").fontSize(8);
-          indexColumn === 0 && doc.addBackground(rectRow, "purple", 0.1);
-        },
-      });
-
-      /* Tabla envios */
-      doc.table(shippingTable, {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
-        y: doc.y + 40,
-        prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          doc.font("Helvetica").fontSize(8);
-          indexColumn === 0 && doc.addBackground(rectRow, "purple", 0.1);
-        },
-      });
-      /* TABLA PRODUCTOS */
       doc.table(productsTable, {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
-        y: doc.y + 40,
+        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+        x: doc.x,
+        y: doc.y + 20,
+        width: 455,
+        padding: 5.8,
+
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          doc.font("Helvetica").fontSize(8);
-          indexRow % 2 !== 0 && doc.addBackground(rectRow, "purple", 0.01);
+          doc.font("Helvetica").fontSize(10),
+            indexRow % 2 !== 0 &&
+              indexRow !== lastIndex &&
+              doc.addBackground(rectRow, "#753bbd", 0.02),
+            indexRow === lastIndex &&
+              doc.addBackground(rectCell, "#753bbd", 0.2);
+        },
+        columnSpacing: 8,
+        divider: {
+          horizontal: { disabled: false, width: 0.5, opacity: 0.5 },
+          header: { disabled: false, width: 2, opacity: 0.8 },
         },
       });
+
+      /* Rect CLIENTES */
+      doc
+        .rect(63, 280, 250, 105)
+        .lineWidth(1)
+        .fillOpacity(0.05)
+        .fillAndStroke("#753bbd", "#9d7bbe");
+
+      /* Rect ENTREGA */
+      doc
+        .rect(63, 623, 250, 108)
+        .lineWidth(1)
+        .fillOpacity(0.05)
+        .fillAndStroke("#753bbd", "#9d7bbe");
+
+      doc.pipe(fs.createWriteStream("Exported/ListadoOrdenes.pdf"));
+
+      res.setHeader("Content-type", "application/pdf");
+      doc.pipe(res);
 
       doc.end();
     } catch (e) {
@@ -361,6 +440,8 @@ module.exports = {
       next(e);
     }
   },
+
+  /* Salidas */
   getInputsBetweenDates: async function (req, res, next) {
     try {
       const { initDate, endDate } = req.body.dates;
@@ -461,7 +542,107 @@ module.exports = {
   },
   getInputByCode: async function (req, res, next) {
     try {
-      const { code } = req.params.code;
+      const foundInput = await inputsModel.find({
+        code: req.params.code,
+      });
+
+      console.log(foundInput[0]);
+
+      const doc = new PDFDocument({
+        margins: {
+          top: 50,
+          bottom: 50,
+          left: 70,
+          right: 70,
+        },
+        font: "Helvetica",
+      });
+      console.log("CODE:", foundInput[0].code);
+      const stream = doc.pipe(fs.createWriteStream("exported/eventByCode.pdf"));
+
+      doc.initForm();
+      /* const orders =
+      foundInput[0].orders !== []
+          ? foundInput[0].orders.toString().split(",").join(" - ")
+          : "Sin órdenes asociadas"; */
+      /* doc.rect(doc.x, doc.y + 20, 100, 400).stroke(); */
+      doc
+        .image("Exported/logo.jpg", 70, 70, {
+          fit: [50, 50],
+          align: "center",
+          valign: "center",
+        })
+        .fontSize(11)
+        .font("Courier")
+        .text("Sistema de gestión", 38, 128);
+      doc
+        .moveDown(3)
+        .font("Helvetica-Bold")
+        .fontSize(23)
+        .lineGap(30)
+        .text("INFORMACIÓN DE SALIDA # " + foundInput[0].code, {
+          align: "center",
+        });
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Código: #" + foundInput[0].code);
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Proveedor: ", { continued: true })
+        .font("Helvetica")
+        .text(foundInput[0].enterprise);
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Fecha de pago: ", { continued: true })
+        .font("Helvetica")
+        .text(foundInput[0].purchaseDate.toLocaleDateString());
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Importe: ", { continued: true })
+        .font("Helvetica")
+        .text(formatNumberToCurrency(foundInput[0].amount));
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Concepto: ", { continued: true })
+        .font("Helvetica")
+        .text(foundInput[0].concept);
+
+      /* doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Código de órdenes asociadas: ", { continued: true })
+        .font("Helvetica")
+        .text(orders); */
+
+      doc
+        .rect(32, 210, 545, 280)
+        .lineWidth(1)
+        .fillOpacity(0.07)
+        .fillAndStroke("#753bbd", "#9d7bbe");
+
+      doc
+        .rect(20, 20, 570, 740)
+        .lineWidth(2)
+        .fillOpacity(0)
+        .fillAndStroke("#753bbd", "#9d7bbe");
+
+      doc.end();
+      doc.pipe(res);
+      /*const { code } = req.params.code;
       const foundOrder = await inputsModel.find({
         code: req.params.code,
       });
@@ -555,7 +736,7 @@ module.exports = {
         datas: arr,
       };
 
-      /* TABLA GENERAL */
+    
       doc.table(table, {
         prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
         y: doc.y + 40,
@@ -565,12 +746,13 @@ module.exports = {
         },
       });
 
-      doc.end();
+      doc.end(); */
     } catch (e) {
       console.log(e);
       next(e);
     }
   },
+  /* Eventos */
   getEventsBetweenDates: async function (req, res, next) {
     try {
       const { initDate, endDate } = req.body.dates;
@@ -597,6 +779,7 @@ module.exports = {
             .toString()
             .split(",")
             .join(" - "),
+          cost: formatNumberToCurrency(findEventsBetweenDates[i].cost),
           notes: findEventsBetweenDates[i].notes,
         };
         arr.push(data);
@@ -653,6 +836,13 @@ module.exports = {
             width: 75,
           },
           {
+            label: "Costo",
+            property: "cost",
+            valign: "center",
+            align: "center",
+            width: 100,
+          },
+          {
             label: "Observaciones",
             property: "notes",
             valign: "center",
@@ -677,157 +867,102 @@ module.exports = {
         code: req.params.code,
       });
 
-      console.log(foundOrder);
-      let arr = [];
+      console.log("EVENTO:", foundOrder[0]);
 
-      for (let i = 0; i < foundOrder.length; i++) {
-        data = {
-          code: foundOrder[i].code,
-          date: foundOrder[i].date.toLocaleDateString(),
-          name: foundOrder[i].name,
-          address: foundOrder[i].address,
-          orders: foundOrder[i].orders.toString().split(",").join(" - "),
-          notes: foundOrder[i].notes,
-        };
-
-        arr.push(data);
-      }
-
-      const doc = new PDFDocumentTable({
-        margin: 60,
-        size: "A4",
+      const doc = new PDFDocument({
+        margins: {
+          top: 50,
+          bottom: 50,
+          left: 70,
+          right: 70,
+        },
+        font: "Helvetica",
       });
+      console.log("CODE:", foundOrder[0].code);
+      const stream = doc.pipe(fs.createWriteStream("exported/eventByCode.pdf"));
 
+      doc.initForm();
+      const orders =
+        foundOrder[0].orders !== []
+          ? foundOrder[0].orders.toString().split(",").join(" - ")
+          : "Sin órdenes asociadas";
+      /* doc.rect(doc.x, doc.y + 20, 100, 400).stroke(); */
       doc
-        .image("Exported/logo.png", 50, 27, {
+        .image("Exported/logo.jpg", 70, 70, {
           fit: [50, 50],
           align: "center",
           valign: "center",
         })
-        .rect(50, 25, 50, 50)
-        .stroke()
-        .fontSize(10)
-        .font("Times-Roman")
-        .text("Sistema de gestión", 35, 83);
+        .fontSize(11)
+        .font("Courier")
+        .text("Sistema de gestión", 38, 128);
+      doc
+        .moveDown(3)
+        .font("Helvetica-Bold")
+        .fontSize(23)
+        .lineGap(30)
+        .text("INFORMACIÓN DE EVENTO", {
+          align: "center",
+        });
 
-      doc.pipe(fs.createWriteStream("Exported/ListadoOrdenes.pdf"));
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Código: #" + foundOrder[0].code);
 
-      res.setHeader("Content-type", "application/pdf");
-      doc.pipe(res);
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Designación: ", { continued: true })
+        .font("Helvetica")
+        .text(foundOrder[0].name);
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Fecha de realización: ", { continued: true })
+        .font("Helvetica")
+        .text(foundOrder[0].date.toLocaleDateString());
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Costo: ", { continued: true })
+        .font("Helvetica")
+        .text(formatNumberToCurrency(foundOrder[0].cost));
 
-      const table = {
-        title: "Evento #" + foundOrder[0].code,
-        subtitle: "Fecha de emisión: " + new Date().toLocaleDateString(),
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Lugar / Dirección: ", { continued: true })
+        .font("Helvetica")
+        .text(foundOrder[0].address);
 
-        headers: [
-          {
-            label: "Código",
-            property: "code",
-            valign: "center",
-            align: "center",
-            width: 50,
-          },
-          {
-            label: "Designación",
-            property: "name",
-            valign: "center",
-            width: 60,
-          },
-          {
-            label: "Fecha",
-            property: "date",
-            valign: "center",
-            align: "center",
-            width: 75,
-          },
-          {
-            label: "Observaciones",
-            property: "notes",
-            valign: "center",
-            align: "center",
-            width: 75,
-          },
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(15)
+        .lineGap(15)
+        .text("Código de órdenes asociadas: ", { continued: true })
+        .font("Helvetica")
+        .text(orders);
 
-          {
-            label: "Ordenes asociadas",
-            property: "orders",
-            valign: "center",
-            align: "center",
-            width: 90,
-          },
+      doc
+        .rect(32, 210, 545, 280)
+        .lineWidth(1)
+        .fillOpacity(0.07)
+        .fillAndStroke("#753bbd", "#9d7bbe");
 
-          {
-            label: "Importe",
-            property: "amount",
-            valign: "center",
-            align: "center",
-            width: 90,
-          },
-        ],
-        datas: arr,
-      };
-
-      /* TABLA GENERAL */
-      doc.table(table, {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
-        y: doc.y + 40,
-        prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          doc.font("Helvetica").fontSize(8);
-          indexColumn === 0 && doc.addBackground(rectRow, "purple", 0.1);
-        },
-      });
+      doc
+        .rect(20, 20, 570, 740)
+        .lineWidth(2)
+        .fillOpacity(0)
+        .fillAndStroke("#753bbd", "#9d7bbe");
 
       doc.end();
-    } catch (e) {
-      console.log(e);
-      next(e);
-    }
-  },
-
-  delete: async function (req, res, next) {
-    try {
-      const deleted = await purchaseOrdersModel.deleteOne({
-        _id: req.params.id,
-      });
-      await purchaseOrdersModel.findOneAndUpdate(
-        {
-          _id: req.params.id,
-        },
-        { isDeleted: true }
-      );
-      //  isDeleted: true
-
-      res.json(deleted);
-    } catch (e) {
-      next(e);
-    }
-  },
-  update: async function (req, res, next) {
-    console.log(req.body[0].searchField);
-
-    try {
-      const doc = await purchaseOrdersModel.findOne({ _id: req.params.id });
-      const update = { [req.body[0].searchField]: req.body[0].update };
-      await doc.updateOne(update);
-
-      res.json(doc);
-    } catch (e) {
-      console.log(e);
-    }
-  },
-  amount: async function (req, res, next) {
-    try {
-      const countDoc = await purchaseOrdersModel.countDocuments();
-      if (countDoc === 0) {
-        res.json(0);
-      } else {
-        const amount = await purchaseOrdersModel
-          .find({})
-          .sort({ _id: -1 })
-          .limit(1);
-
-        res.json(amount[0].code);
-      }
+      doc.pipe(res);
     } catch (e) {
       console.log(e);
       next(e);

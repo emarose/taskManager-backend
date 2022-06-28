@@ -5,7 +5,7 @@ module.exports = {
   getAll: async function (req, res, next) {
     try {
       const events = await eventsModel.find();
-      //console.log(events);
+
       res.json(events);
     } catch (e) {
       next(e);
@@ -36,6 +36,7 @@ module.exports = {
         code: req.body.code,
         name: req.body.name,
         date: req.body.date,
+        cost: req.body.cost,
         notes: req.body.notes,
         address: req.body.address,
         orders: req.body.orders,
@@ -58,8 +59,6 @@ module.exports = {
     }
   },
   update: async function (req, res, next) {
-    console.log(req.body[0].searchField);
-
     try {
       const doc = await eventsModel.findOne({ _id: req.params.id });
       const update = { [req.body[0].searchField]: req.body[0].update };
@@ -101,6 +100,23 @@ module.exports = {
       console.log(update, updatePurchaseOrders);
 
       res.json(updatePurchaseOrders);
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  },
+  link: async function (req, res, next) {
+    console.log("BODY:", req.body, "PARAMS:", req.params);
+
+    try {
+      const update = await eventsModel.updateOne(
+        { code: req.params.code },
+        { $push: { orders: req.body.orders } },
+        { multi: true }
+      );
+
+      console.log(update);
+      res.json(update);
     } catch (e) {
       console.log(e);
       next(e);

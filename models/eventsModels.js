@@ -23,11 +23,23 @@ const eventsSchema = mongoose.Schema({
     type: Date,
     required: [true, errorMessage.GENERAL.campo_obligatorio],
   },
+  cost: {
+    type: Number,
+    required: [true, errorMessage.GENERAL.campo_obligatorio],
+    min: 0,
+  },
   notes: {
     type: String,
   },
 });
 
+eventsSchema.virtual("cost_currency").get(function () {
+  let cost = this.cost.toFixed(2).replace(".", ",");
+  return `$ ${String(cost).replace(
+    /(?<!\,.*)(\d)(?=(?:\d{3})+(?:\,|$))/g,
+    "$1."
+  )}`;
+});
 eventsSchema.set("toJSON", { getters: true, virtuals: true });
 
 //Creacion modelo (Clase -> POO)

@@ -16,7 +16,8 @@ router.post("/add", eventsController.create);
 router.delete("/:id", eventsController.delete);
 /* Desasociar */
 router.put("/unlink/:code", eventsController.unlink);
-
+/* Asociar */
+router.put("/link/:code", eventsController.link);
 /* Cargar por Codigo */
 /* router.get("/byCode/:code", eventsController.getByCode); */
 
