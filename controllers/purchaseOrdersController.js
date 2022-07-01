@@ -53,7 +53,7 @@ module.exports = {
           req.body.event !== "Sin asociar"
             ? req.body.event.substring(4)
             : req.body.event,
-        isDeleted: false,
+        isAnulled: false,
       });
 
       const response = await document.save();
@@ -73,9 +73,9 @@ module.exports = {
         {
           _id: req.params.id,
         },
-        { isDeleted: true }
+        { isAnulled: true }
       );
-      //  isDeleted: true
+      //  isAnulled: true
 
       res.json(deleted);
     } catch (e) {
@@ -106,6 +106,33 @@ module.exports = {
       next(e);
     }
   },
+  anullOrder: async function (req, res, next) {
+    try {
+      console.log("REQU PARAMS:", req.params, req.body);
+
+      const doc = await purchaseOrdersModel.findOne({ _id: req.params.id });
+      const update = req.body;
+      await doc.updateOne(req.body);
+      res.json(update);
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  },
+  unanullOrder: async function (req, res, next) {
+    try {
+      console.log("DESANULAR", req.params, req.body);
+
+      const doc = await purchaseOrdersModel.findOne({ _id: req.params.id });
+      const update = req.body;
+      await doc.updateOne(req.body);
+      res.json(update);
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  },
+
   /* unlinkEvent: async function (req, res, next) {
     try {
       console.log("REQU PARAMS:", req.params, req.body);

@@ -141,12 +141,9 @@ module.exports = {
         code: req.params.code,
       });
 
-      console.log(foundOrder[0].customer);
-
       const customerByName = await customersModel.find({
         name: foundOrder[0].customer,
       });
-      console.log("CLIENTE POR NOMBRE:", customerByName);
 
       let productsArray = [];
       let sum = 0;
@@ -197,6 +194,7 @@ module.exports = {
           shippingState: foundOrder[i].shippingState,
           shippingAddress: foundOrder[i].shippingAddress,
           shippingEnterprise: foundOrder[i].shippingEnterprise,
+          isAnulled: foundOrder[i].isAnulled ? "Anulada" : "OK",
         };
         arr.push(data);
       }
@@ -264,13 +262,20 @@ module.exports = {
             align: "center",
             width: 90,
           },
+          {
+            label: "Estado de Orden",
+            property: "isAnulled",
+            valign: "center",
+            align: "center",
+            width: 60,
+          },
         ],
         datas: arr,
       };
 
       doc.table(generalTable, {
         prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
-        x: doc.x,
+        x: doc.x - 25,
         y: doc.y,
         width: 455,
 
@@ -290,9 +295,13 @@ module.exports = {
       });
 
       /* CLIENTE */
-      doc.moveDown().fontSize(15).font("Helvetica").text("Datos del cliente:");
       doc
         .moveDown()
+        .fontSize(15)
+        .font("Helvetica")
+        .text("Datos del cliente:", doc.x + 70, doc.y);
+      doc
+        .moveDown(0.5)
         .fontSize(10)
         .text("Código # ", { continued: true })
         .font("Helvetica-Bold")
@@ -323,12 +332,12 @@ module.exports = {
       /* ENTREGA */
 
       doc
-        .moveUp(10)
+        .moveUp(9)
         .fontSize(15)
         .font("Helvetica")
-        .text("Datos de entrega: ", 250, doc.y);
+        .text("Datos de entrega: ", 325, doc.y);
       doc
-        .moveDown()
+        .moveDown(0.5)
         .fontSize(10)
         .font("Helvetica")
         .text("Estado: ", { continued: true })
@@ -361,7 +370,7 @@ module.exports = {
       doc
         .fontSize(15)
         .font("Helvetica")
-        .text("Productos incluídos:", doc.x, doc.y + 30);
+        .text("Productos incluídos:", doc.x - 255, doc.y + 35);
 
       const productsTable = {
         headers: [
@@ -396,9 +405,9 @@ module.exports = {
       doc.table(productsTable, {
         prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
         x: doc.x,
-        y: doc.y + 20,
+        y: doc.y + 30,
         width: 455,
-        padding: 5.8,
+        padding: 5.7,
 
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
           doc.font("Helvetica").fontSize(10),
@@ -408,7 +417,7 @@ module.exports = {
             indexRow === lastIndex &&
               doc.addBackground(rectCell, "#753bbd", 0.2);
         },
-        columnSpacing: 8,
+        columnSpacing: 7,
         divider: {
           horizontal: { disabled: false, width: 0.5, opacity: 0.5 },
           header: { disabled: false, width: 2, opacity: 0.8 },
@@ -417,17 +426,17 @@ module.exports = {
 
       /* Rect CLIENTES */
       doc
-        .rect(63, 280, 250, 105)
+        .rect(70, 295, 439, 133)
         .lineWidth(1)
         .fillOpacity(0.05)
         .fillAndStroke("#753bbd", "#9d7bbe");
 
       /* Rect ENTREGA */
-      doc
+      /*   doc
         .rect(63, 623, 250, 108)
         .lineWidth(1)
         .fillOpacity(0.05)
-        .fillAndStroke("#753bbd", "#9d7bbe");
+        .fillAndStroke("#753bbd", "#9d7bbe"); */
 
       doc.pipe(fs.createWriteStream("Exported/ListadoOrdenes.pdf"));
 
@@ -867,102 +876,108 @@ module.exports = {
         code: req.params.code,
       });
 
-      console.log("EVENTO:", foundOrder[0]);
-
-      const doc = new PDFDocument({
-        margins: {
-          top: 50,
-          bottom: 50,
-          left: 70,
-          right: 70,
-        },
-        font: "Helvetica",
-      });
-      console.log("CODE:", foundOrder[0].code);
-      const stream = doc.pipe(fs.createWriteStream("exported/eventByCode.pdf"));
-
-      doc.initForm();
-      const orders =
-        foundOrder[0].orders !== []
-          ? foundOrder[0].orders.toString().split(",").join(" - ")
-          : "Sin órdenes asociadas";
-      /* doc.rect(doc.x, doc.y + 20, 100, 400).stroke(); */
-      doc
-        .image("Exported/logo.jpg", 70, 70, {
-          fit: [50, 50],
-          align: "center",
-          valign: "center",
-        })
-        .fontSize(11)
-        .font("Courier")
-        .text("Sistema de gestión", 38, 128);
-      doc
-        .moveDown(3)
-        .font("Helvetica-Bold")
-        .fontSize(23)
-        .lineGap(30)
-        .text("INFORMACIÓN DE EVENTO", {
-          align: "center",
+      if (Object.keys(foundOrder).length !== 0) {
+        const doc = new PDFDocument({
+          margins: {
+            top: 50,
+            bottom: 50,
+            left: 70,
+            right: 70,
+          },
+          font: "Helvetica",
         });
 
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(15)
-        .lineGap(15)
-        .text("Código: #" + foundOrder[0].code);
+        const stream = doc.pipe(
+          fs.createWriteStream("exported/eventByCode.pdf")
+        );
 
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(15)
-        .lineGap(15)
-        .text("Designación: ", { continued: true })
-        .font("Helvetica")
-        .text(foundOrder[0].name);
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(15)
-        .lineGap(15)
-        .text("Fecha de realización: ", { continued: true })
-        .font("Helvetica")
-        .text(foundOrder[0].date.toLocaleDateString());
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(15)
-        .lineGap(15)
-        .text("Costo: ", { continued: true })
-        .font("Helvetica")
-        .text(formatNumberToCurrency(foundOrder[0].cost));
+        doc.initForm();
 
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(15)
-        .lineGap(15)
-        .text("Lugar / Dirección: ", { continued: true })
-        .font("Helvetica")
-        .text(foundOrder[0].address);
+        const orders =
+          foundOrder[0].orders !== []
+            ? foundOrder[0].orders.toString().split(",").join(" - ")
+            : "Sin órdenes asociadas";
 
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(15)
-        .lineGap(15)
-        .text("Código de órdenes asociadas: ", { continued: true })
-        .font("Helvetica")
-        .text(orders);
+        /* doc.rect(doc.x, doc.y + 20, 100, 400).stroke(); */
+        doc
+          .image("Exported/logo.jpg", 70, 70, {
+            fit: [50, 50],
+            align: "center",
+            valign: "center",
+          })
+          .fontSize(11)
+          .font("Courier")
+          .text("Sistema de gestión", 38, 128);
+        doc
+          .moveDown(3)
+          .font("Helvetica-Bold")
+          .fontSize(23)
+          .lineGap(30)
+          .text("INFORMACIÓN DE EVENTO", {
+            align: "center",
+          });
 
-      doc
-        .rect(32, 210, 545, 280)
-        .lineWidth(1)
-        .fillOpacity(0.07)
-        .fillAndStroke("#753bbd", "#9d7bbe");
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(15)
+          .lineGap(15)
+          .text("Código: #" + foundOrder[0].code);
 
-      doc
-        .rect(20, 20, 570, 740)
-        .lineWidth(2)
-        .fillOpacity(0)
-        .fillAndStroke("#753bbd", "#9d7bbe");
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(15)
+          .lineGap(15)
+          .text("Designación: ", { continued: true })
+          .font("Helvetica")
+          .text(foundOrder[0].name);
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(15)
+          .lineGap(15)
+          .text("Fecha de realización: ", { continued: true })
+          .font("Helvetica")
+          .text(foundOrder[0].date.toLocaleDateString());
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(15)
+          .lineGap(15)
+          .text("Costo: ", { continued: true })
+          .font("Helvetica")
+          .text(formatNumberToCurrency(foundOrder[0].cost));
 
-      doc.end();
-      doc.pipe(res);
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(15)
+          .lineGap(15)
+          .text("Lugar / Dirección: ", { continued: true })
+          .font("Helvetica")
+          .text(foundOrder[0].address);
+
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(15)
+          .lineGap(15)
+          .text("Código de órdenes asociadas: ", { continued: true })
+          .font("Helvetica")
+          .text(orders);
+
+        doc
+          .rect(32, 210, 545, 280)
+          .lineWidth(1)
+          .fillOpacity(0.07)
+          .fillAndStroke("#753bbd", "#9d7bbe");
+
+        doc
+          .rect(20, 20, 570, 740)
+          .lineWidth(2)
+          .fillOpacity(0)
+          .fillAndStroke("#753bbd", "#9d7bbe");
+
+        doc.end();
+        doc.pipe(res);
+      } else {
+        res.sendStatus(404);
+      }
     } catch (e) {
       console.log(e);
       next(e);
