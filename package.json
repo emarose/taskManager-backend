@@ -3,10 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node backend/app.js",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install npm && run build"
+    "start": "node ./bin/www"
   },
-
+  
   "engines": {
     "node": "v14.17.5"
 },
