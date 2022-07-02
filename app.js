@@ -4,6 +4,7 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 var logger = require("morgan");
+require("dotenv").config();
 
 var indexRouter = require("./routes/index");
 var customersRouter = require("./routes/customers");
@@ -61,4 +62,7 @@ app.use(function (err, req, res, next) {
   res.json({ error: true, message: err.message });
 });
 
+app.listen(process.env.PORT || 3001, () => {
+  console.log("Puerto conectado");
+});
 module.exports = app;
