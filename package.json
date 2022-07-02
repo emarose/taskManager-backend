@@ -1,10 +1,16 @@
 {
   "name": "dn2022",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
+
   "scripts": {
-    "start": "nodemon app.js"
-  },
+    "dev": "react-scripts start",
+    "start": "serve -s build",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "heroku-postbuild": "npm run build"
+    },
   "engines": {
     "node": "v14.17.5"
   },
@@ -23,6 +29,7 @@
     "mongoose-sequence": "^5.3.1",
     "morgan": "~1.9.1",
     "nodemon": "^2.0.16",
-    "pdfkit-table": "^0.1.86"
+    "pdfkit-table": "^0.1.86",
+    "serve": "^13.0.2"
   }
 }
