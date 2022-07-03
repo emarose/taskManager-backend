@@ -1,9 +1,14 @@
 {
     "version": 2,
-    "builds": [
+    "builds": [{
+      "src": "./app.js",
+      "use": "@now/node-server"
+    }],
+    "routes": [{"handle": "filesystem"},
       {
-        "src": "app.js",
-        "use": "@now/node"
+        "src": "/.*",
+        "dest": "app.js"
       }
     ]
   }
+  
