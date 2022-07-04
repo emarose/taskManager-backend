@@ -1,11 +1,11 @@
 {
-  "name": "dn2022",
+  "name": "rk2022",
   "version": "1.0.0",
   "private": true,
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
-    },
+  },
   "engines": {
     "node": "v14.17.5"
   },

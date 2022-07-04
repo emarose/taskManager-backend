@@ -12,6 +12,7 @@ const formatNumberToCurrency = require("../util/utils.js");
 module.exports = {
   /* Ordenes */
   getOrdersBetweenDates: async function (req, res, next) {
+    console.log(req.body);
     try {
       const { initDate, endDate } = req.body.dates;
 
@@ -449,7 +450,6 @@ module.exports = {
       next(e);
     }
   },
-
   /* Salidas */
   getInputsBetweenDates: async function (req, res, next) {
     try {

@@ -6,6 +6,8 @@ const customersController = require("../controllers/customersController");
 router.get("/countCustomers", customersController.amount);
 /* Cargar todos */
 router.get("/", customersController.getAll);
+/* Cargar todos */
+router.get("/:name", customersController.getByName);
 /* Agregar */
 router.post("/add", customersController.create);
 /* Eliminar */

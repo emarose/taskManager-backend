@@ -10,6 +10,15 @@ module.exports = {
       next(e);
     }
   },
+  getByName: async function (req, res, next) {
+    try {
+      const customer = await customersModel.find({ name: req.params.name });
+      console.log(customer);
+      res.json(customer);
+    } catch (e) {
+      next(e);
+    }
+  },
   create: async function (req, res, next) {
     try {
       const document = new customersModel({

@@ -3,13 +3,12 @@ var router = express.Router();
 const path = require("path");
 const reports = require("../controllers/reportsController");
 
-router.post("/getOrdersBetweenDates", reports.getOrdersBetweenDates);
-router.post("/getOrderByCode/:code", reports.getOrderByCode);
+router.post("/purchaseOrders/getBetweenDates", reports.getOrdersBetweenDates);
+router.post("/events/getBetweenDates", reports.getEventsBetweenDates);
+router.post("/inputs/getBetweenDates", reports.getInputsBetweenDates);
 
-router.post("/getInputsBetweenDates", reports.getInputsBetweenDates);
-router.post("/getInputByCode/:code", reports.getInputByCode);
-
-router.post("/getEventsBetweenDates", reports.getEventsBetweenDates);
-router.post("/getEventByCode/:code", reports.getEventByCode);
+router.post("/purchaseOrders/getByCode/:code", reports.getOrderByCode);
+router.post("/inputs/getByCode/:code", reports.getInputByCode);
+router.post("/events/getByCode/:code", reports.getEventByCode);
 
 module.exports = router;
