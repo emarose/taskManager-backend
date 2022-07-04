@@ -6,7 +6,6 @@ var bodyParser = require("body-parser");
 var logger = require("morgan");
 require("dotenv").config();
 
-var indexRouter = require("./routes/index");
 var customersRouter = require("./routes/customers");
 var shippingRouter = require("./routes/shipping");
 var productsRouter = require("./routes/products");
