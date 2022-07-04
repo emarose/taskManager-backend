@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 require("dotenv").config();
 mongoose.connect(
   process.env.MONGODB_CONNECTION_STRING,
-  { useNewUrlParser: true, useUnifiedTopology: true },
+  { useNewUrlParser: true },
   function (error) {
     if (error) {
       throw error;
