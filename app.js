@@ -20,6 +20,8 @@ var eventsRouter = require("./routes/events");
 var app = express();
 var cors = require("cors");
 
+var baseUrl = process.env.baseURL || "http://localhost:3000";
+
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -61,7 +63,7 @@ app.use(function (err, req, res, next) {
   res.json({ error: true, message: err.message });
 });
 
-app.listen(process.env.PORT || 3001, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log("Express conectado");
 });
 

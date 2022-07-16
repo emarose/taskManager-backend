@@ -19,7 +19,6 @@ module.exports = {
     }
   },
   create: async function (req, res, next) {
-    //console.log("req name:", req.body);
     try {
       const data = new productsModel({
         code: req.body.code,
